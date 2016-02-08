@@ -58,7 +58,7 @@ public class SemanticVersionTest {
     }
     
     /**
-     * Valid ctr, no prerelease
+     * Valid ctr, prerelease
      */
     @Test
     public void validWithPre() {
@@ -69,7 +69,6 @@ public class SemanticVersionTest {
         assertEquals("beta1", semver.getPrerelease());
         assertEquals("1.2.3-beta1", semver.toString());
     }
-    
 
     /**
      * Invalid ctr, null major
