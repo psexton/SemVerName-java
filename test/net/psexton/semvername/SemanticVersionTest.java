@@ -62,14 +62,40 @@ public class SemanticVersionTest {
      */
     @Test
     public void validWithPre() {
-        SemanticVersion semver = new SemanticVersion(1, 2, 3, "beta1");
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "preBeta1");
         assertEquals(new Integer(1), semver.getMajor());
         assertEquals(new Integer(2), semver.getMinor());
         assertEquals(new Integer(3), semver.getPatch());
-        assertEquals("beta1", semver.getPrerelease());
-        assertEquals("1.2.3-beta1", semver.toString());
+        assertEquals("preBeta1", semver.getPrerelease());
+        assertEquals("1.2.3-preBeta1", semver.toString());
+    }
+    
+    /**
+     * Valid ctr, dot separated prerelease parts
+     */
+    @Test
+    public void valid2SectionPre() {
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "beta.1");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(2), semver.getMinor());
+        assertEquals(new Integer(3), semver.getPatch());
+        assertEquals("beta.1", semver.getPrerelease());
+        assertEquals("1.2.3-beta.1", semver.toString());
     }
 
+    /**
+     * Valid ctr, multiple dot separated prerelease parts
+     */
+    @Test
+    public void valid3SectionPre() {
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "beta.26.32h");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(2), semver.getMinor());
+        assertEquals(new Integer(3), semver.getPatch());
+        assertEquals("beta.26.32h", semver.getPrerelease());
+        assertEquals("1.2.3-beta.26.32h", semver.toString());
+    }
+    
     /**
      * Invalid ctr, null major
      */
@@ -112,7 +138,7 @@ public class SemanticVersionTest {
     @Test
     public void invalidNegativeMajor() {
         exception.expect(IllegalArgumentException.class);
-        SemanticVersion semver = new SemanticVersion(-1, 2, 3, "beta1");
+        SemanticVersion semver = new SemanticVersion(-1, 2, 3);
     }
 
     /**
@@ -121,7 +147,7 @@ public class SemanticVersionTest {
     @Test
     public void invalidNegativeMinor() {
         exception.expect(IllegalArgumentException.class);
-        SemanticVersion semver = new SemanticVersion(1, -2, 3, "beta1");
+        SemanticVersion semver = new SemanticVersion(1, -2, 3);
     }
     
     /**
@@ -130,7 +156,7 @@ public class SemanticVersionTest {
     @Test
     public void invalidNegativePatch() {
         exception.expect(IllegalArgumentException.class);
-        SemanticVersion semver = new SemanticVersion(1, 2, -3, "beta1");
+        SemanticVersion semver = new SemanticVersion(1, 2, -3);
     }
     
     /**
@@ -140,6 +166,98 @@ public class SemanticVersionTest {
     public void invalidIllegalPrerelease() {
         exception.expect(IllegalArgumentException.class);
         SemanticVersion semver = new SemanticVersion(1, 2, 3, "@");
+    }
+    
+    /**
+     * Invalid ctr, disallowed char in prerelease patch
+     */
+    @Test
+    public void invalidIllegalDotSuffixInPrerelease() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "foo.");
+    }
+    
+    /**
+     * Invalid ctr, disallowed char in prerelease patch
+     */
+    @Test
+    public void invalidIllegalDotPrefixInPrerelease() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, ".foo");
+    }
+    
+    /**
+     * All zeroes is valid
+     */
+    @Test
+    public void validAllZero() {
+        SemanticVersion semver = new SemanticVersion(0, 0, 0);
+        assertEquals(new Integer(0), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("0.0.0", semver.toString());
+    }
+    
+    /**
+     * Only patch nonzero is valid
+     */
+    @Test
+    public void validMajorMinorZero() {
+        SemanticVersion semver = new SemanticVersion(0, 0, 1);
+        assertEquals(new Integer(0), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(1), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("0.0.1", semver.toString());
+    }
+    
+    /**
+     * Only minor nonzero is valid
+     */
+    @Test
+    public void validMajorPatchZero() {
+        SemanticVersion semver = new SemanticVersion(0, 1, 0);
+        assertEquals(new Integer(0), semver.getMajor());
+        assertEquals(new Integer(1), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("0.1.0", semver.toString());
+    }
+    
+    /**
+     * Only major nonzero is valid
+     */
+    @Test
+    public void validMinorPatchZero() {
+        SemanticVersion semver = new SemanticVersion(1, 0, 0);
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("1.0.0", semver.toString());
+    }
+    
+    /**
+     * Only major nonzero is valid
+     */
+    @Test
+    public void validWithHyphenInBuild() {
+        SemanticVersion semver = new SemanticVersion(1, 0, 0, "abc-def");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("abc-def", semver.getPrerelease());
+        assertEquals("1.0.0-abc-def", semver.toString());
+    }
+    
+    /**
+     * Invalid, underscore in pre
+     */
+    @Test
+    public void invalidUnderscoreInPre() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 0, 0, "abc_def");
     }
     
     /**
