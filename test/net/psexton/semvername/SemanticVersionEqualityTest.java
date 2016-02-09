@@ -26,20 +26,6 @@ import static org.junit.Assert.*;
  */
 public class SemanticVersionEqualityTest {
     
-
-    /**
-     * Valid, no prerelease
-     */
-    @Test
-    public void equality() {
-        SemanticVersion version1a = SemanticVersion.valueOf("1.0.0");
-        SemanticVersion version1b = SemanticVersion.valueOf("1.0.0");
-        SemanticVersion version2 = SemanticVersion.valueOf("2.0.0");
-            
-        assertTrue(version1a.equals(version1b));
-        assertFalse(version1a.equals(version2));
-    }
-    
     @Test
     public void noEqualityWithNull() {
         SemanticVersion instance = SemanticVersion.valueOf("1.2.3");
@@ -54,4 +40,90 @@ public class SemanticVersionEqualityTest {
         assertFalse(instance.equals("1.2.3"));
     }
     
+    /**
+     * Equal to self
+     */
+    @Test
+    public void equalToSelf() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        
+        assertTrue(lhs.equals(lhs));
+    }
+    
+    /**
+     * Equal to same
+     */
+    @Test
+    public void equalToSame() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
+        
+        assertTrue(lhs.equals(rhs));
+    }
+    
+    /**
+     * Majors differ
+     */
+    @Test
+    public void majorsDiffer() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("2.0.0");
+            
+        assertFalse(lhs.equals(rhs));
+    }
+    
+    /**
+     * Minors differ
+     */
+    @Test
+    public void minorsDiffer() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.1.0");
+            
+        assertFalse(lhs.equals(rhs));
+    }
+    
+    /**
+     * Patches differ
+     */
+    @Test
+    public void patchesDiffer() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.1");
+            
+        assertFalse(lhs.equals(rhs));
+    }
+    
+    /**
+     * Prereleases differ, left is empty
+     */
+    @Test
+    public void prereleasesDifferEmptyLhs() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-pre");
+            
+        assertFalse(lhs.equals(rhs));
+    }
+    
+    /**
+     * Prereleases differ, right is empty
+     */
+    @Test
+    public void prereleasesDifferEmptyRhs() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-pre");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
+            
+        assertFalse(lhs.equals(rhs));
+    }
+    
+    /**
+     * Prereleases differ, neither is empty
+     */
+    @Test
+    public void prereleasesDiffer() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-beta");
+            
+        assertFalse(lhs.equals(rhs));
+    }
 }
