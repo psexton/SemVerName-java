@@ -38,6 +38,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             throw new IllegalArgumentException("string cannot be null or empty");
         
         // First use regex to break into major/minor/patch/prerelease parts
+        // Parsing the prerelease string is done by the constructor
         Pattern pattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-(.+))?");
         Matcher matcher = pattern.matcher(semVerString);
         if(!matcher.matches())
@@ -81,27 +82,48 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             throw new IllegalArgumentException("major value cannot be null");
         if(major < 0)
             throw new IllegalArgumentException("major value must be non-negative");
+        this.major = major;
+        
         // Validate minor
         if(minor == null)
             throw new IllegalArgumentException("minor value cannot be null");
         if(minor < 0)
             throw new IllegalArgumentException("minor value must be non-negative");
+        this.minor = minor;
+        
         // Validate patch
         if(patch == null)
             throw new IllegalArgumentException("patch value cannot be null");
         if(patch < 0)
             throw new IllegalArgumentException("patch value must be non-negative");
+        this.patch = patch;
+        
         // Validate prerelease
         if(prerelease == null)
             throw new IllegalArgumentException("prerelease string cannot be null");
-        Pattern p = Pattern.compile("[^a-zA-Z0-9-]");
-        if(p.matcher(prerelease).find())
-            throw new IllegalArgumentException("prerelease string is restricted to alphanumerics and hyphens");
         
-        this.major = major;
-        this.minor = minor;
-        this.patch = patch;
-        this.prerelease = prerelease;
+        if(prerelease.contains(".")){
+            // Contains periods, need to parse sections
+            Pattern disallowedChars = Pattern.compile("[^a-zA-Z0-9-]");
+            String[] identifiers = prerelease.split("\\.");
+            // NOTE: This split will silently discard trailing periods. Need to check for that case specially
+            if(prerelease.endsWith("."))
+                throw new IllegalArgumentException("prerelease identifiers cannot be empty");
+            for(String part : identifiers) {
+                if(disallowedChars.matcher(part).find())
+                    throw new IllegalArgumentException("prerelease string is restricted to dot-separated identifiers containing alphanumerics and hyphens");
+                if(part.isEmpty())
+                    throw new IllegalArgumentException("prerelease identifiers cannot be empty");
+            }
+            this.prerelease = prerelease;
+        }
+        else {
+            // No periods, single section
+            Pattern disallowedChars = Pattern.compile("[^a-zA-Z0-9-]");
+            if(disallowedChars.matcher(prerelease).find())
+                throw new IllegalArgumentException("prerelease string is restricted to dot-separated sections of alphanumerics and hyphens");
+            this.prerelease = prerelease;
+        }
     }
     
     @Override

@@ -97,8 +97,8 @@ public class SemanticVersionValueOfTest {
         assertEquals(new Integer(1), semver.getMajor());
         assertEquals(new Integer(2), semver.getMinor());
         assertEquals(new Integer(3), semver.getPatch());
-        assertEquals("beta.26.3h", semver.getPrerelease());
-        assertEquals("1.2.3-beta.26.3h", semver.toString());
+        assertEquals("beta.26.32h", semver.getPrerelease());
+        assertEquals("1.2.3-beta.26.32h", semver.toString());
     }
     
     /**
