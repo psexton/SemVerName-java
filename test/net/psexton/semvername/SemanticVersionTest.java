@@ -261,6 +261,15 @@ public class SemanticVersionTest {
     }
     
     /**
+     * Invalid, illegal character in a prerelease identifier
+     */
+    @Test
+    public void invalidIllegalPrereleaseIdentifier() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "foo.$.bar");
+    }
+    
+    /**
      * Test that setter returns a new instance
      */
     @Test

@@ -354,4 +354,13 @@ public class SemanticVersionValueOfTest {
         exception.expect(IllegalArgumentException.class);
         SemanticVersion semver = SemanticVersion.valueOf("1.0.0-abc_def");
     }
+    
+    /**
+     * Invalid, illegal character in a prerelease identifier
+     */
+    @Test
+    public void invalidIllegalPrereleaseIdentifier() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3-foo.$.bar");
+    }
 }
