@@ -48,13 +48,18 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         String patchCapture = matcher.group(3);
         String prereleaseCapture = matcher.group(5);
         
+        // Check that major, minor, and patch Captures don't start with a 0 unless they are 0.
+        // Integer.valueOf would handle it, but no leading zeros is a requirement of semver2
+        if(majorCapture.startsWith("0") && !majorCapture.equals("0"))
+            throw new IllegalArgumentException("major cannot have a leading zero");
+        if(minorCapture.startsWith("0") && !minorCapture.equals("0"))
+            throw new IllegalArgumentException("minor cannot have a leading zero");
+        if(patchCapture.startsWith("0") && !patchCapture.equals("0"))
+            throw new IllegalArgumentException("patch cannot have a leading zero");
+        
         // If there was no prerelease, prereleaseCapture is null
         if(prereleaseCapture == null)
             prereleaseCapture = "";
-        
-        // Check that major/minor/patch can be converted to ints
-        // A NumberFormatException may be thrown here, but seems unlikely, as it
-        // shouldn't have matched the regex
         
         return new SemanticVersion(Integer.valueOf(majorCapture), Integer.valueOf(minorCapture), Integer.valueOf(patchCapture), prereleaseCapture);
     }
