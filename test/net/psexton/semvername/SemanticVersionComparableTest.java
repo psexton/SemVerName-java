@@ -28,60 +28,166 @@ import static org.junit.Assert.*;
 public class SemanticVersionComparableTest {
     
     @Test
-    public void compareSelf() {
-        SemanticVersion versionA = SemanticVersion.valueOf("1.0.0");
-        SemanticVersion versionB = SemanticVersion.valueOf("1.0.0");
-        assertEquals(versionA.compareTo(versionB), 0);
+    public void equalToSelf() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        assertEquals(lhs.compareTo(lhs), 0); // 1.0.0 == 1.0.0
     }
     
     @Test
-    public void compareMajors() {
-        SemanticVersion version1 = SemanticVersion.valueOf("1.3.5");
-        SemanticVersion version2 = SemanticVersion.valueOf("2.0.0");
-        
-        assertEquals(version1.compareTo(version2), -1); // 1 < 2
-        assertEquals(version2.compareTo(version1), 1); // 2 > 1
+    public void equalToSame() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
+        assertEquals(lhs.compareTo(rhs), 0); // 1.0.0 == 1.0.0
     }
     
     @Test
-    public void compareMinors() {
-        SemanticVersion version1 = SemanticVersion.valueOf("1.0.1");
-        SemanticVersion version2 = SemanticVersion.valueOf("1.2.0");
-        
-        assertEquals(version2.compareTo(version1), 1);
+    public void majorsDifferLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.9.9");
+        SemanticVersion rhs = SemanticVersion.valueOf("2.0.0");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.9.9 < 2.0.0
     }
     
     @Test
-    public void comparePatches() {
-        SemanticVersion version1 = SemanticVersion.valueOf("1.0.0");
-        SemanticVersion version2 = SemanticVersion.valueOf("1.0.2");
-        
-        assertEquals(version2.compareTo(version1), 1); // 2 > 0
+    public void minorsDifferLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.1.9");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.2.0");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.1.9 < 1.2.0
     }
     
     @Test
-    public void comparePrereleases() {
-        SemanticVersion version2 = SemanticVersion.valueOf("1.2.3");
-        SemanticVersion version2p1 = SemanticVersion.valueOf("1.2.3-p1");
-        
-        assertEquals(version2.compareTo(version2p1), 1); // 2 > 2p1
-        assertEquals(version2p1.compareTo(version2), -1); // 2 > 2p1
+    public void patchesDifferLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.1.1");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.1.2");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.1.1 < 1.1.2
     }
     
     @Test
-    public void nonLexicographicComparisons() {
-        SemanticVersion version10 = SemanticVersion.valueOf("10.20.30");
-        SemanticVersion version2 = SemanticVersion.valueOf("1.2.3");
-        SemanticVersion version2p1 = SemanticVersion.valueOf("1.2.3-p1");
-        
-        assertEquals(version10.compareTo(version10), 0); // 10 == 10
-        assertEquals(version2.compareTo(version10), -1); // 2 < 10
-        assertEquals(version10.compareTo(version2), 1); // 10 > 2
-        
-        assertEquals(version2p1.compareTo(version2p1), 0); // 2p1 == 2p1
-        assertEquals(version2p1.compareTo(version10), -1); // 2p1 < 10
-        assertEquals(version10.compareTo(version2p1), 1); // 10 > 2p1
+    public void majorsDifferLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.9.9");
+        SemanticVersion lhs = SemanticVersion.valueOf("2.0.0");
+        assertEquals(lhs.compareTo(rhs), 1); // 2.0.0 > 1.9.9
     }
+    
+    @Test
+    public void minorsDifferLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.1.9");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.2.0");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.2.0 > 1.1.9
+    }
+    
+    @Test
+    public void patchesDifferLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.1.1");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.1.2");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.1.2 > 1.1.1
+    }
+    
+    @Test
+    public void majorsAreNumeric() {
+        SemanticVersion lhs = SemanticVersion.valueOf("2.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("10.0.0");
+        assertEquals(lhs.compareTo(rhs), -1); // 2.0.0 < 10.0.0
+    }
+    
+    @Test
+    public void minorsAreNumeric() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.2.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.10.0");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.2.0 < 1.10.0
+    }
+    
+    @Test
+    public void patchesAreNumeric() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.2");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.10");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.2 < 1.0.10
+    }
+    
+    @Test
+    public void prereleasesDifferEmptyLhs() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-pre");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.0.0 > 1.0.0-pre
+    }
+    
+    @Test
+    public void prereleasesDifferEmptyRhs() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-pre");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-pre < 1.0.0
+    }
+    
+    @Test
+    public void singleAlphaIdLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-beta");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-alpha < 1.0.0-beta
+    }
+    
+    @Test
+    public void singleAlphaIdLhsMore(){
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-beta");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.0.0-beta > 1.0.0-alpha
+    }
+    
+    @Test
+    public void singleNumericIdLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-9");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-10");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-9 < 1.0.0-10
+    }
+    
+    @Test
+    public void singleNumericIdLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-9");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-10");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.0.0-10 > 1.0.0-9
+    }
+    
+    @Test
+    public void differentNumberOfIdMixedLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha.1");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-alpha < 1.0.0-alpha.1
+    }
+    
+    @Test
+    public void differentNumberOfIdMixedLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha.1");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.0.0-alpha.1 > 1.0.0-alpha
+    }
+    
+    @Test
+    public void numericIdIsLowerLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha.beta");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-alpha.1 < 1.0.0-alpha.beta
+    }
+    
+    @Test
+    public void numericIdIsLowerLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha.beta");
+        assertEquals(lhs.compareTo(rhs), 1); // 1.0.0-alpha.beta > 1.0.0-alpha.1
+    }
+    
+    @Test
+    public void differentNumberOfIdBothAlphaLhsLess() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha.beta");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-beta");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-alpha.beta < 1.0.0-beta
+    }
+    
+    @Test
+    public void differentNumberOfIdBothAlphaLhsMore() {
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha.beta");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-beta");
+        assertEquals(lhs.compareTo(rhs), -1); // 1.0.0-beta > 1.0.0-alpha.beta
+    }
+    
+    // =====
     
     @Test
     public void sortArray() {
