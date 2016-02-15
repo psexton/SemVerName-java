@@ -17,6 +17,7 @@
  */
 package net.psexton.semvername;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +33,8 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     private final Integer minor;
     private final Integer patch;
     private final String prerelease;
+    private final ArrayList<Object> prereleaseIds;
+    private final ArrayList<Boolean> idsAreNumeric;
 
     public static SemanticVersion valueOf(String semVerString) {
         if(semVerString == null || semVerString.isEmpty())
@@ -99,6 +102,9 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         this.patch = patch;
         
         // Validate prerelease
+        prereleaseIds = new ArrayList<>();
+        idsAreNumeric = new ArrayList<>();
+        
         if(prerelease == null)
             throw new IllegalArgumentException("prerelease string cannot be null");
         
@@ -114,16 +120,45 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
                     throw new IllegalArgumentException("prerelease string is restricted to dot-separated identifiers containing alphanumerics and hyphens");
                 if(part.isEmpty())
                     throw new IllegalArgumentException("prerelease identifiers cannot be empty");
+                // Still here? Valid identifier
+                if(isNumeric(part)) {
+                    idsAreNumeric.add(true);
+                    prereleaseIds.add(Integer.parseInt(part));
+                }
+                else {
+                    idsAreNumeric.add(false);
+                    prereleaseIds.add(part);
+                }
             }
-            this.prerelease = prerelease;
         }
         else {
             // No periods, single section
             Pattern disallowedChars = Pattern.compile("[^a-zA-Z0-9-]");
             if(disallowedChars.matcher(prerelease).find())
                 throw new IllegalArgumentException("prerelease string is restricted to dot-separated sections of alphanumerics and hyphens");
-            this.prerelease = prerelease;
+            if(isNumeric(prerelease)) {
+                idsAreNumeric.add(true);
+                prereleaseIds.add(Integer.parseInt(prerelease));
+            } 
+            else {
+                idsAreNumeric.add(false);
+                prereleaseIds.add(prerelease);
+            }
         }
+        
+        this.prerelease = prerelease;
+    }
+    
+    private boolean isNumeric(String str) {
+        // Empty and null strings are not numeric
+        if(str == null || str.isEmpty())
+            return false;
+        // NOTE: For SemVer, we are only concerned with arabic numerals
+        // Zero is numeric, but anything with a leading zero is not
+        if(str.startsWith("0"))
+            return (str.length() == 1);
+        // If we're still here, it's either numeric and > 0, or nonnumeric
+        return str.matches("[0-9]+");
     }
     
     @Override
@@ -149,8 +184,48 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         if(this.prerelease.isEmpty() && rhs.prerelease.isEmpty())
             return 0;
         // Major, minor, and patch are equal, and both have non-empty prereleases
-        // Use String's compareTo
-        return this.prerelease.compareTo(rhs.prerelease);
+        // Use custom comparator
+        return comparePrereleases(rhs);
+    }
+    
+    // Return < 0 if lhs < rhs. 0 if lhs == rhs. > 0 if lhs > rhs
+    private int comparePrereleases(SemanticVersion rhs) {
+        // Use the prereleaseIds and idIsNumeric ArrayLists we made in ctr
+        // Iterate over pairs of identifiers
+        
+        for(int i = 0; i < Math.min(this.prereleaseIds.size(), rhs.prereleaseIds.size()); i++) {
+            // Check for {both numeric, both alpha, mixed}
+            // Only digits is always < alphanumeric
+            if(this.idsAreNumeric.get(i) && !rhs.idsAreNumeric.get(i))
+                return -1;
+            if(!this.idsAreNumeric.get(i) && rhs.idsAreNumeric.get(i))
+                return 1;
+            // Both only digits, compare numericly
+            if(this.idsAreNumeric.get(i) && rhs.idsAreNumeric.get(i)) {
+                Integer lhsId = (Integer) this.prereleaseIds.get(i);
+                Integer rhsId = (Integer) rhs.prereleaseIds.get(i);
+                int comparison = lhsId.compareTo(rhsId);
+                if(comparison != 0)
+                    return comparison;
+            }
+            // Both alphanumeric, compare lexicographically
+            if(!this.idsAreNumeric.get(i) && !rhs.idsAreNumeric.get(i)) {
+                String lhsId = (String) this.prereleaseIds.get(i);
+                String rhsId = (String) rhs.prereleaseIds.get(i);
+                int comparison = lhsId.compareTo(rhsId);
+                if(comparison != 0)
+                    return comparison;
+            }
+            
+            // They matched, continue to next loop iteration
+        }
+        
+        // All pairable identifiers matched. 
+        // Either lhs or rhs has more identifiers left, and the one with more left is greater
+        // Or they have same number of identifiers, and they match.
+        Integer lhsSize = this.prereleaseIds.size();
+        Integer rhsSize = rhs.prereleaseIds.size();
+        return lhsSize.compareTo(rhsSize);
     }
     
     /**
