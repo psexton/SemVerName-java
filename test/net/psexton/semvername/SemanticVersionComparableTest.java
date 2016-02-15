@@ -190,6 +190,13 @@ public class SemanticVersionComparableTest {
         assertThat(lhs.compareTo(rhs), is(greaterThan(0))); // 1.0.0-beta > 1.0.0-alpha.beta
     }
     
+    @Test
+    public void leadingZeroIsNotNumeric() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-01");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-2");
+        assertThat(lhs.compareTo(rhs), is(greaterThan(0))); // 1.0.0-2 < 1.0.0-01
+    }
+    
     // =====
     
     @Test
