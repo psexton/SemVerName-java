@@ -239,10 +239,10 @@ public class SemanticVersionTest {
     }
     
     /**
-     * Only major nonzero is valid
+     * Valid, with hyphen in prerelease
      */
     @Test
-    public void validWithHyphenInBuild() {
+    public void validWithHyphenInPre() {
         SemanticVersion semver = new SemanticVersion(1, 0, 0, "abc-def");
         assertEquals(new Integer(1), semver.getMajor());
         assertEquals(new Integer(0), semver.getMinor());
@@ -268,6 +268,8 @@ public class SemanticVersionTest {
         exception.expect(IllegalArgumentException.class);
         SemanticVersion semver = new SemanticVersion(1, 2, 3, "foo.$.bar");
     }
+    
+    
     
     /**
      * Test that setter returns a new instance

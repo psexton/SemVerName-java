@@ -307,10 +307,10 @@ public class SemanticVersionValueOfTest {
     }
     
     /**
-     * Valid, with hyphen in build
+     * Valid, with hyphen in prerelease
      */
     @Test
-    public void validWithHyphenInBuild() {
+    public void validWithHyphenInPre() {
         SemanticVersion semver = SemanticVersion.valueOf("1.0.0-abc-def");
         assertEquals(new Integer(1), semver.getMajor());
         assertEquals(new Integer(0), semver.getMinor());
@@ -363,4 +363,6 @@ public class SemanticVersionValueOfTest {
         exception.expect(IllegalArgumentException.class);
         SemanticVersion semver = SemanticVersion.valueOf("1.2.3-foo.$.bar");
     }
+    
+    
 }
