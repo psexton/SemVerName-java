@@ -17,6 +17,7 @@
  */
 package net.psexton.semvername;
 
+import static org.hamcrest.Matchers.is;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,14 +31,14 @@ public class SemanticVersionEqualityTest {
     public void noEqualityWithNull() {
         SemanticVersion instance = SemanticVersion.valueOf("1.2.3");
         
-        assertFalse(instance.equals(null));
+        assertThat(instance.equals(null), is(false));
     }
     
     @Test
     public void noEqualityWithDifferentClass() {
         SemanticVersion instance = SemanticVersion.valueOf("1.2.3");
         
-        assertFalse(instance.equals("1.2.3"));
+        assertThat(instance.equals("1.2.3"), is(false));
     }
     
     /**
@@ -47,7 +48,7 @@ public class SemanticVersionEqualityTest {
     public void equalToSelf() {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
         
-        assertTrue(lhs.equals(lhs));
+        assertThat(lhs.equals(lhs), is(true));
     }
     
     /**
@@ -58,7 +59,7 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
         
-        assertTrue(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(true));
     }
     
     /**
@@ -69,7 +70,7 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
         SemanticVersion rhs = SemanticVersion.valueOf("2.0.0");
             
-        assertFalse(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(false));
     }
     
     /**
@@ -80,7 +81,7 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
         SemanticVersion rhs = SemanticVersion.valueOf("1.1.0");
             
-        assertFalse(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(false));
     }
     
     /**
@@ -91,7 +92,7 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.1");
             
-        assertFalse(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(false));
     }
     
     /**
@@ -102,7 +103,7 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-pre");
             
-        assertFalse(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(false));
     }
     
     /**
@@ -113,7 +114,7 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-pre");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
             
-        assertFalse(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(false));
     }
     
     /**
@@ -124,6 +125,39 @@ public class SemanticVersionEqualityTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-beta");
             
-        assertFalse(lhs.equals(rhs));
+        assertThat(lhs.equals(rhs), is(false));
+    }
+    
+    /**
+     * Builds differ, left is empty
+     */
+    @Test
+    public void buildsDifferEmptyLhs() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0+pre");
+            
+        assertThat(lhs.equals(rhs), is(false));
+    }
+    
+    /**
+     * Builds differ, right is empty
+     */
+    @Test
+    public void buildsDifferEmptyRhs() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0+pre");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0");
+            
+        assertThat(lhs.equals(rhs), is(false));
+    }
+    
+    /**
+     * Builds differ, neither is empty
+     */
+    @Test
+    public void buildsDiffer() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0+alpha");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0+beta");
+            
+        assertThat(lhs.equals(rhs), is(false));
     }
 }

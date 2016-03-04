@@ -164,14 +164,14 @@ public class SemanticVersionComparableTest {
     
     @Test
     public void numericIdIsLowerLhsLess() {
-        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha.1");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha.beta");
         assertThat(lhs.compareTo(rhs), is(lessThan(0))); // 1.0.0-alpha.1 < 1.0.0-alpha.beta
     }
     
     @Test
     public void numericIdIsLowerLhsMore() {
-        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-alpha.1");
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-alpha.beta");
         assertThat(lhs.compareTo(rhs), is(greaterThan(0))); // 1.0.0-alpha.beta > 1.0.0-alpha.1
     }
@@ -195,6 +195,14 @@ public class SemanticVersionComparableTest {
         SemanticVersion lhs = SemanticVersion.valueOf("1.0.0-01");
         SemanticVersion rhs = SemanticVersion.valueOf("1.0.0-2");
         assertThat(lhs.compareTo(rhs), is(greaterThan(0))); // 1.0.0-2 < 1.0.0-01
+    }
+    
+    @Test
+    public void buildIgnored() {
+        SemanticVersion lhs = SemanticVersion.valueOf("1.0.0+a");
+        SemanticVersion rhs = SemanticVersion.valueOf("1.0.0+b");
+        assertThat(lhs.compareTo(rhs), is(0)); // 1.0.0+a is neither greater nor less than 1.0.0+b
+        assertThat(rhs.compareTo(lhs), is(0));
     }
     
     // =====

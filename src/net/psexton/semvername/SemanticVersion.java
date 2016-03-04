@@ -33,6 +33,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     private final Integer minor;
     private final Integer patch;
     private final String prerelease;
+    private final String build;
     private final ArrayList<Object> prereleaseIds;
     private final ArrayList<Boolean> idsAreNumeric;
 
@@ -40,9 +41,9 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         if(semVerString == null || semVerString.isEmpty())
             throw new IllegalArgumentException("string cannot be null or empty");
         
-        // First use regex to break into major/minor/patch/prerelease parts
-        // Parsing the prerelease string is done by the constructor
-        Pattern pattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-(.+))?");
+        // First use regex to break into major/minor/patch/prerelease/build parts
+        // Parsing the prerelease and build strings is done by the constructor
+        Pattern pattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-([a-zA-Z0-9\\.-]+))?(\\+([a-zA-Z0-9\\.-]+))?");
         Matcher matcher = pattern.matcher(semVerString);
         if(!matcher.matches())
             throw new IllegalArgumentException("string did not match regex");
@@ -50,7 +51,8 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         String majorCapture = matcher.group(1);
         String minorCapture = matcher.group(2);
         String patchCapture = matcher.group(3);
-        String prereleaseCapture = matcher.group(5);
+        String prereleaseCapture = matcher.group(5); // group 4 includes the hyphen
+        String buildCapture = matcher.group(7); // group 6 includes the plus sign
         
         // Check that major, minor, and patch Captures don't start with a 0 unless they are 0.
         // Integer.valueOf would handle it, but no leading zeros is a requirement of semver2
@@ -65,14 +67,18 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         if(prereleaseCapture == null)
             prereleaseCapture = "";
         
-        return new SemanticVersion(Integer.valueOf(majorCapture), Integer.valueOf(minorCapture), Integer.valueOf(patchCapture), prereleaseCapture);
+        // If there was no build, buildCapture is null
+        if(buildCapture == null)
+            buildCapture = "";
+        
+        return new SemanticVersion(Integer.valueOf(majorCapture), Integer.valueOf(minorCapture), Integer.valueOf(patchCapture), prereleaseCapture, buildCapture);
     }
     
     /**
      * Returns an "empty" semver of 0.0.0.
      */
     public SemanticVersion() {
-        this(0, 0, 0, "");
+        this(0, 0, 0);
     }
     
     public SemanticVersion(Integer major, Integer minor, Integer patch) {
@@ -80,6 +86,10 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     }
     
     public SemanticVersion(Integer major, Integer minor, Integer patch, String prerelease) {
+        this(major, minor, patch, prerelease, "");
+    }
+    
+    public SemanticVersion(Integer major, Integer minor, Integer patch, String prerelease, String build) {
         // Validate major
         if(major == null)
             throw new IllegalArgumentException("major value cannot be null");
@@ -147,6 +157,34 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         }
         
         this.prerelease = prerelease;
+        
+        // Validate build
+        if(build == null)
+            throw new IllegalArgumentException("build string cannot be null");
+        
+        if(build.contains(".")){
+            // Contains periods, need to parse sections
+            Pattern disallowedChars = Pattern.compile("[^a-zA-Z0-9-]");
+            String[] identifiers = build.split("\\.");
+            // NOTE: This split will silently discard trailing periods. Need to check for that case specially
+            if(build.endsWith("."))
+                throw new IllegalArgumentException("build identifiers cannot be empty");
+            for(String part : identifiers) {
+                if(disallowedChars.matcher(part).find())
+                    throw new IllegalArgumentException("build string is restricted to dot-separated identifiers containing alphanumerics and hyphens");
+                if(part.isEmpty())
+                    throw new IllegalArgumentException("build identifiers cannot be empty");
+                // Still here? Valid identifier
+            }
+        }
+        else {
+            // No periods, single section
+            Pattern disallowedChars = Pattern.compile("[^a-zA-Z0-9-]");
+            if(disallowedChars.matcher(build).find())
+                throw new IllegalArgumentException("build string is restricted to dot-separated sections of alphanumerics and hyphens");
+        }
+        
+        this.build = build;
     }
     
     private boolean isNumeric(String str) {
@@ -186,6 +224,8 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         // Major, minor, and patch are equal, and both have non-empty prereleases
         // Use custom comparator
         return comparePrereleases(rhs);
+        
+        // NOTE: build strings are not used when comparing
     }
     
     // Return < 0 if lhs < rhs. 0 if lhs == rhs. > 0 if lhs > rhs
@@ -244,6 +284,8 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         
         // If rhs.major >= 1, return true if this.major == rhs.major && this > rhs
         return (this.major.equals(rhs.major) && this.compareTo(rhs) == 1);
+        
+        // NOTE: build strings are not used when comparing
     }
     
     //
@@ -266,29 +308,38 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         return prerelease;
     }
     
+    public String getBuild() {
+        return build;
+    }
+    
     public SemanticVersion setMajor(Integer major) {
-        return new SemanticVersion(major, minor, patch, prerelease);
+        return new SemanticVersion(major, minor, patch, prerelease, build);
     }
 
     public SemanticVersion setMinor(Integer minor) {
-        return new SemanticVersion(major, minor, patch, prerelease);
+        return new SemanticVersion(major, minor, patch, prerelease, build);
     }
 
     public SemanticVersion setPatch(Integer patch) {
-        return new SemanticVersion(major, minor, patch, prerelease);
+        return new SemanticVersion(major, minor, patch, prerelease, build);
     }
 
     public SemanticVersion setPrerelease(String prerelease) {
-        return new SemanticVersion(major, minor, patch, prerelease);
+        return new SemanticVersion(major, minor, patch, prerelease, build);
+    }
+    
+    public SemanticVersion setBuild(String build) {
+        return new SemanticVersion(major, minor, patch, prerelease, build);
     }
 
     @Override
     public String toString() {
-        String numericPart = major + "." + minor + "." + patch;
+        String stringForm = major + "." + minor + "." + patch;
         if(!prerelease.isEmpty())
-            return numericPart + "-" + prerelease;
-        else
-            return numericPart;
+            stringForm = stringForm + "-" + prerelease;
+        if(!build.isEmpty())
+            stringForm = stringForm + "+" + build;
+        return stringForm;
     }
 
     @Override
@@ -298,6 +349,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         hash = 53 * hash + Objects.hashCode(this.minor);
         hash = 53 * hash + Objects.hashCode(this.patch);
         hash = 53 * hash + Objects.hashCode(this.prerelease);
+        hash = 53 * hash + Objects.hashCode(this.build);
         return hash;
     }
 
@@ -320,6 +372,9 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             return false;
         }
         if (!Objects.equals(this.prerelease, other.prerelease)) {
+            return false;
+        }
+        if (!Objects.equals(this.build, other.build)) {
             return false;
         }
         return true;

@@ -17,6 +17,7 @@
  */
 package net.psexton.semvername;
 
+import static org.hamcrest.Matchers.is;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -27,36 +28,56 @@ import static org.junit.Assert.*;
 public class SemanticVersionCgtTest {
     
     @Test
-    public void compatiblyGreaterThanMajorZero() {
+    public void sameMajorZeroLhsLess() {
         SemanticVersion version04 = SemanticVersion.valueOf("0.4.0");
         SemanticVersion version041 = SemanticVersion.valueOf("0.4.1");
         
-        assertFalse(version041.isCompatiblyGreaterThan(version04));
-        assertFalse(version04.isCompatiblyGreaterThan(version041));
+        assertThat(version04.isCompatiblyGreaterThan(version041), is(false)); // 0.4.0 !c> 0.4.1
     }
     
     @Test
-    public void compatiblyGreaterThanMajorN() {
-        SemanticVersion version10 = SemanticVersion.valueOf("10.20.30");
+    public void sameMajorZeroLhsMore() {
+        SemanticVersion version04 = SemanticVersion.valueOf("0.4.0");
+        SemanticVersion version041 = SemanticVersion.valueOf("0.4.1");
+        
+        assertThat(version041.isCompatiblyGreaterThan(version04), is(false)); // 0.4.1 !c> 0.4.0
+    }
+    
+    @Test
+    public void prerelease() {
         SemanticVersion version1 = SemanticVersion.valueOf("1.2.3");
         SemanticVersion version1p1 = SemanticVersion.valueOf("1.2.3-p1");
         
-        assertTrue(version1.isCompatiblyGreaterThan(version1p1));
-        assertFalse(version10.isCompatiblyGreaterThan(version1));
+        assertThat(version1.isCompatiblyGreaterThan(version1p1), is(true)); // 1.2.3 c> 1.2.3-p1
     }
     
     @Test
-    public void compatiblyGreaterThanSameMajorN() {
+    public void differentMajorN() {
+        SemanticVersion version10 = SemanticVersion.valueOf("10.20.30");
+        SemanticVersion version1 = SemanticVersion.valueOf("1.2.3");
+        
+        assertThat(version10.isCompatiblyGreaterThan(version1), is(false)); // 10.20.30 !c> 1.2.3
+    }
+    
+    @Test
+    public void sameMajorNLhsLess() {
         SemanticVersion version12 = SemanticVersion.valueOf("1.2.0");
         SemanticVersion version13 = SemanticVersion.valueOf("1.3.0");
         
-        assertTrue(version13.isCompatiblyGreaterThan(version12));
-        assertFalse(version12.isCompatiblyGreaterThan(version13));
+        assertThat(version12.isCompatiblyGreaterThan(version13), is(false)); // 1.2.0 !c> 1.3.0
+    }
+    
+    @Test
+    public void sameMajorNLhsMore() {
+        SemanticVersion version12 = SemanticVersion.valueOf("1.2.0");
+        SemanticVersion version13 = SemanticVersion.valueOf("1.3.0");
+        
+        assertThat(version13.isCompatiblyGreaterThan(version12), is(true)); // 1.3.0 c> 1.2.0
     }
     
     @Test
     public void equalityIsCgt() {
         SemanticVersion version1 = SemanticVersion.valueOf("1.2.3");
-        assertTrue(version1.isCompatiblyGreaterThan(version1));
+        assertThat(version1.isCompatiblyGreaterThan(version1), is(true));
     }
 }

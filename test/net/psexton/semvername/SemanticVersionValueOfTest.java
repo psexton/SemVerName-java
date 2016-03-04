@@ -76,6 +76,34 @@ public class SemanticVersionValueOfTest {
     }
     
     /**
+     * Valid, with build
+     */
+    @Test
+    public void validWithBuild() {
+        SemanticVersion semver = SemanticVersion.valueOf("1.0.0+nightly021");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("nightly021", semver.getBuild());
+        assertEquals("1.0.0+nightly021", semver.toString());
+    }
+    
+    /**
+     * Valid, pre and build
+     */
+    @Test
+    public void validWithPreAndBuild() {
+        SemanticVersion semver = SemanticVersion.valueOf("1.0.0-dev+63hdeq");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("dev", semver.getPrerelease());
+        assertEquals("63hdeq", semver.getBuild());
+        assertEquals("1.0.0-dev+63hdeq", semver.toString());
+    }
+    
+    /**
      * Valid, dot separated prerelease parts
      */
     @Test
@@ -99,6 +127,34 @@ public class SemanticVersionValueOfTest {
         assertEquals(new Integer(3), semver.getPatch());
         assertEquals("beta.26.32h", semver.getPrerelease());
         assertEquals("1.2.3-beta.26.32h", semver.toString());
+    }
+    
+    /**
+     * Valid, dot separated build parts
+     */
+    @Test
+    public void valid3SectionBuild() {
+        SemanticVersion semver = SemanticVersion.valueOf("1.0.0+nightly.021.3q");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("nightly.021.3q", semver.getBuild());
+        assertEquals("1.0.0+nightly.021.3q", semver.toString());
+    }
+    
+    /**
+     * Valid, both pre and build strings
+     */
+    @Test
+    public void validSectionedPreAndSectionedBuild() {
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3-alpha.1+2016.02.09");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(2), semver.getMinor());
+        assertEquals(new Integer(3), semver.getPatch());
+        assertEquals("alpha.1", semver.getPrerelease());
+        assertEquals("2016.02.09", semver.getBuild());
+        assertEquals("1.2.3-alpha.1+2016.02.09", semver.toString());
     }
     
     /**
@@ -138,6 +194,15 @@ public class SemanticVersionValueOfTest {
     }
     
     /**
+     * Invalid, plus sign but empty build
+     */
+    @Test
+    public void invalidNullBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3+");
+    }
+    
+    /**
      * Invalid, negative major
      */
     @Test
@@ -174,7 +239,7 @@ public class SemanticVersionValueOfTest {
     }
     
     /**
-     * Invalid, disallowed char in prerelease patch
+     * Invalid, trailing separator in prerelease
      */
     @Test
     public void invalidIllegalDotSuffixInPrerelease() {
@@ -183,12 +248,39 @@ public class SemanticVersionValueOfTest {
     }
     
     /**
-     * Invalid, disallowed char in prerelease patch
+     * Invalid, leading separator in prerelease
      */
     @Test
     public void invalidIllegalDotPrefixInPrerelease() {
         exception.expect(IllegalArgumentException.class);
         SemanticVersion semver = SemanticVersion.valueOf("1.2.3-.foo");
+    }
+    
+    /**
+     * Invalid, disallowed char in build
+     */
+    @Test
+    public void invalidIllegalBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3+@");
+    }
+    
+    /**
+     * Invalid, disallowed char in build
+     */
+    @Test
+    public void invalidIllegalDotSuffixInBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3+bar.");
+    }
+    
+    /**
+     * Invalid, trailing separator in build
+     */
+    @Test
+    public void invalidIllegalDotPrefixInBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3+.bar");
     }
     
     /**
@@ -364,5 +456,21 @@ public class SemanticVersionValueOfTest {
         SemanticVersion semver = SemanticVersion.valueOf("1.2.3-foo.$.bar");
     }
     
+    /**
+     * Invalid, underscore in build
+     */
+    @Test
+    public void invalidUnderscoreInBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.0.0+abc_def");
+    }
     
+    /**
+     * Invalid, illegal character in a build identifier
+     */
+    @Test
+    public void invalidIllegalBuildIdentifier() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = SemanticVersion.valueOf("1.2.3+foo.$.bar");
+    }
 }

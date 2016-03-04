@@ -58,7 +58,7 @@ public class SemanticVersionTest {
     }
     
     /**
-     * Valid ctr, prerelease
+     * Valid ctr, with prerelease
      */
     @Test
     public void validWithPre() {
@@ -68,6 +68,34 @@ public class SemanticVersionTest {
         assertEquals(new Integer(3), semver.getPatch());
         assertEquals("preBeta1", semver.getPrerelease());
         assertEquals("1.2.3-preBeta1", semver.toString());
+    }
+    
+    /**
+     * Valid ctr, with build
+     */
+    @Test
+    public void validWithBuild() {
+        SemanticVersion semver = new SemanticVersion(1, 0, 0, "", "nightly021");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("nightly021", semver.getBuild());
+        assertEquals("1.0.0+nightly021", semver.toString());
+    }
+    
+    /**
+     * Valid ctr, pre and build
+     */
+    @Test
+    public void validWithPreAndBuild() {
+        SemanticVersion semver = new SemanticVersion(1, 0, 0, "dev", "63hdeq");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("dev", semver.getPrerelease());
+        assertEquals("63hdeq", semver.getBuild());
+        assertEquals("1.0.0-dev+63hdeq", semver.toString());
     }
     
     /**
@@ -94,6 +122,34 @@ public class SemanticVersionTest {
         assertEquals(new Integer(3), semver.getPatch());
         assertEquals("beta.26.32h", semver.getPrerelease());
         assertEquals("1.2.3-beta.26.32h", semver.toString());
+    }
+    
+    /**
+     * Valid ctr, dot separated build parts
+     */
+    @Test
+    public void valid3SectionBuild() {
+        SemanticVersion semver = new SemanticVersion(1, 0, 0, "", "nightly.021.3q");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(0), semver.getMinor());
+        assertEquals(new Integer(0), semver.getPatch());
+        assertEquals("", semver.getPrerelease());
+        assertEquals("nightly.021.3q", semver.getBuild());
+        assertEquals("1.0.0+nightly.021.3q", semver.toString());
+    }
+    
+    /**
+     * Valid ctr, both pre and build strings
+     */
+    @Test
+    public void validSectionedPreAndSectionedBuild() {
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "alpha.1", "2016.02.09");
+        assertEquals(new Integer(1), semver.getMajor());
+        assertEquals(new Integer(2), semver.getMinor());
+        assertEquals(new Integer(3), semver.getPatch());
+        assertEquals("alpha.1", semver.getPrerelease());
+        assertEquals("2016.02.09", semver.getBuild());
+        assertEquals("1.2.3-alpha.1+2016.02.09", semver.toString());
     }
     
     /**
@@ -133,6 +189,15 @@ public class SemanticVersionTest {
     }
     
     /**
+     * Invalid ctr, null build
+     */
+    @Test
+    public void invalidNullBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "", null);
+    }
+    
+    /**
      * Invalid ctr, negative major
      */
     @Test
@@ -160,7 +225,7 @@ public class SemanticVersionTest {
     }
     
     /**
-     * Invalid ctr, disallowed char in prerelease patch
+     * Invalid ctr, disallowed char in prerelease
      */
     @Test
     public void invalidIllegalPrerelease() {
@@ -169,7 +234,7 @@ public class SemanticVersionTest {
     }
     
     /**
-     * Invalid ctr, disallowed char in prerelease patch
+     * Invalid ctr, trailing separator in prerelease
      */
     @Test
     public void invalidIllegalDotSuffixInPrerelease() {
@@ -178,12 +243,39 @@ public class SemanticVersionTest {
     }
     
     /**
-     * Invalid ctr, disallowed char in prerelease patch
+     * Invalid ctr, leading separator in prerelease
      */
     @Test
     public void invalidIllegalDotPrefixInPrerelease() {
         exception.expect(IllegalArgumentException.class);
         SemanticVersion semver = new SemanticVersion(1, 2, 3, ".foo");
+    }
+    
+    /**
+     * Invalid ctr, disallowed char in build
+     */
+    @Test
+    public void invalidIllegalBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "", "@");
+    }
+    
+    /**
+     * Invalid ctr, trailing separator in build
+     */
+    @Test
+    public void invalidIllegalDotSuffixInBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "", "bar.");
+    }
+    
+    /**
+     * Invalid ctr, leading separator in build
+     */
+    @Test
+    public void invalidIllegalDotPrefixInBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "", ".bar");
     }
     
     /**
@@ -269,7 +361,23 @@ public class SemanticVersionTest {
         SemanticVersion semver = new SemanticVersion(1, 2, 3, "foo.$.bar");
     }
     
+    /**
+     * Invalid, underscore in build
+     */
+    @Test
+    public void invalidUnderscoreInBuild() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 0, 0, "", "abc_def");
+    }
     
+    /**
+     * Invalid, illegal character in a build identifier
+     */
+    @Test
+    public void invalidIllegalBuildIdentifier() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersion semver = new SemanticVersion(1, 2, 3, "", "foo.$.bar");
+    }
     
     /**
      * Test that setter returns a new instance
@@ -308,6 +416,16 @@ public class SemanticVersionTest {
     public void setPrerelease() {
         SemanticVersion orig = new SemanticVersion();
         SemanticVersion modified = orig.setPrerelease("rc");
+        assertNotSame(orig, modified);
+    }
+    
+    /**
+     * Test that setter returns a new instance
+     */
+    @Test
+    public void setBuild() {
+        SemanticVersion orig = new SemanticVersion();
+        SemanticVersion modified = orig.setBuild("today");
         assertNotSame(orig, modified);
     }
     
