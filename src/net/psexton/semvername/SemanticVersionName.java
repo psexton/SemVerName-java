@@ -33,8 +33,8 @@ public class SemanticVersionName implements Comparable<SemanticVersionName> {
         if(semVerNameString == null || semVerNameString.isEmpty())
             throw new IllegalArgumentException("string cannot be null or empty");
         
-        // First use regex to break into name/major/minor/patch/prerelease parts
-        Pattern pattern = Pattern.compile("([\\w-]+)-((\\d+)\\.(\\d+)\\.(\\d+)(-(.+))?)");
+        // First use regex to break into name/major/minor/patch/prerelease/build parts
+        Pattern pattern = Pattern.compile("([\\w-]+)-((\\d+)\\.(\\d+)\\.(\\d+)(-([a-zA-Z0-9\\.-]+))?(\\+([a-zA-Z0-9\\.-]+))?)");
         Matcher matcher = pattern.matcher(semVerNameString);
         if(!matcher.matches())
             throw new IllegalArgumentException("string did not match regex");
@@ -59,9 +59,11 @@ public class SemanticVersionName implements Comparable<SemanticVersionName> {
             throw new IllegalArgumentException("version cannot be null");
         
         // Validate name
-        Pattern p = Pattern.compile("[^a-zA-Z0-9-_]");
+        Pattern p = Pattern.compile("[^a-z0-9-_]");
         if(p.matcher(name).find())
-            throw new IllegalArgumentException("name string is restricted to alphanumerics, hyphens, and underscores");
+            throw new IllegalArgumentException("name string is restricted to lowercase latin letters, hyphens, and underscores");
+        if(name.startsWith("-") || name.startsWith("_"))
+            throw new IllegalArgumentException("name string cannot start with hyphen or underscore");
         
         this.name = name;
         this.semver = version;
@@ -73,6 +75,10 @@ public class SemanticVersionName implements Comparable<SemanticVersionName> {
     
     public SemanticVersionName(String name, Integer major, Integer minor, Integer patch, String prerelease) {
         this(name, new SemanticVersion(major, minor, patch, prerelease));
+    }
+    
+    public SemanticVersionName(String name, Integer major, Integer minor, Integer patch, String prerelease, String build) {
+        this(name, new SemanticVersion(major, minor, patch, prerelease, build));
     }
     
     @Override

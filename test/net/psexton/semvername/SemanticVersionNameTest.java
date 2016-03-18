@@ -65,6 +65,17 @@ public class SemanticVersionNameTest {
     }
     
     /**
+     * Valid ctr
+     */
+    @Test
+    public void validCtrFlattenedWithBuild() {
+        SemanticVersionName semvername = new SemanticVersionName("hello", 1, 2, 3, "alpha", "20160318");
+        assertEquals("hello", semvername.getName());
+        assertEquals(new SemanticVersion(1, 2, 3, "alpha", "20160318"), semvername.getSemver());
+        assertEquals("hello-1.2.3-alpha+20160318", semvername.toString());
+    }
+    
+    /**
      * Invalid, null name
      */
     @Test
@@ -92,6 +103,33 @@ public class SemanticVersionNameTest {
     }
     
     /**
+     * Invalid, has uppercase letter
+     */
+    @Test
+    public void invalidCtrHasUppercase() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersionName semvername = new SemanticVersionName("Product", new SemanticVersion(1, 2, 3));
+    }
+    
+    /**
+     * Invalid, starts with hyphen
+     */
+    @Test
+    public void invalidCtrStartsWithHyphen() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersionName semvername = new SemanticVersionName("-product", new SemanticVersion(1, 2, 3));
+    }
+    
+    /**
+     * Invalid, starts with underscore
+     */
+    @Test
+    public void invalidCtrStartsWithUnderscore() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersionName semvername = new SemanticVersionName("_product", new SemanticVersion(1, 2, 3));
+    }
+    
+    /**
      * Invalid, null semver
      */
     @Test
@@ -109,6 +147,26 @@ public class SemanticVersionNameTest {
         SemanticVersionName semvername = SemanticVersionName.valueOf("hello-1.2.3");
         assertEquals("hello", semvername.getName());
         assertEquals(new SemanticVersion(1, 2, 3), semvername.getSemver());
+    }
+    
+    /**
+     * Valid valueOf
+     */
+    @Test
+    public void validValueOfWithSegmentedPre() {
+        SemanticVersionName semvername = SemanticVersionName.valueOf("hello-1.2.3-4.5.6");
+        assertEquals("hello", semvername.getName());
+        assertEquals(new SemanticVersion(1, 2, 3, "4.5.6"), semvername.getSemver());
+    }
+    
+    /**
+     * Valid valueOf
+     */
+    @Test
+    public void validValueOfWithBuild() {
+        SemanticVersionName semvername = SemanticVersionName.valueOf("hello-1.2.3+456");
+        assertEquals("hello", semvername.getName());
+        assertEquals(new SemanticVersion(1, 2, 3, "", "456"), semvername.getSemver());
     }
     
     /**
@@ -136,6 +194,33 @@ public class SemanticVersionNameTest {
     public void invalidValueOfBadName() {
         exception.expect(IllegalArgumentException.class);
         SemanticVersionName semvername = SemanticVersionName.valueOf("product.subproduct-1.2.3");
+    }
+    
+    /**
+     * Invalid valueOf, has uppercase letter
+     */
+    @Test
+    public void invalidValueOfHasUppercase() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersionName semvername = SemanticVersionName.valueOf("Product-1.2.3");
+    }
+    
+    /**
+     * Invalid valueOf, starts with hyphen
+     */
+    @Test
+    public void invalidValueOfStartsWithHyphen() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersionName semvername = SemanticVersionName.valueOf("-product-1.2.3");
+    }
+    
+    /**
+     * Invalid valueOf, starts with underscore
+     */
+    @Test
+    public void invalidValueOfStartsWithUnderscore() {
+        exception.expect(IllegalArgumentException.class);
+        SemanticVersionName semvername = SemanticVersionName.valueOf("_product-1.2.3");
     }
     
     /**
