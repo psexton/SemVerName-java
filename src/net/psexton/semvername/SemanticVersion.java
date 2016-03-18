@@ -283,7 +283,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             return false;
         
         // If rhs.major >= 1, return true if this.major == rhs.major && this > rhs
-        return (this.major.equals(rhs.major) && this.compareTo(rhs) == 1);
+        return (this.major.equals(rhs.major) && this.compareTo(rhs) >= 0);
         
         // NOTE: build strings are not used when comparing
     }

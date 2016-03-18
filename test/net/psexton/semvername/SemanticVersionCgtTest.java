@@ -80,4 +80,20 @@ public class SemanticVersionCgtTest {
         SemanticVersion version1 = SemanticVersion.valueOf("1.2.3");
         assertThat(version1.isCompatiblyGreaterThan(version1), is(true));
     }
+    
+    @Test
+    public void buildIgnoredLhsHas() {
+        SemanticVersion withBuild = SemanticVersion.valueOf("1.2.3+aaa");
+        SemanticVersion withoutBuild = SemanticVersion.valueOf("1.2.3");
+        
+        assertThat(withBuild.isCompatiblyGreaterThan(withoutBuild), is(true));
+    }
+    
+    @Test
+    public void buildIgnoredRhsHas() {
+        SemanticVersion withBuild = SemanticVersion.valueOf("1.2.3+aaa");
+        SemanticVersion withoutBuild = SemanticVersion.valueOf("1.2.3");
+        
+        assertThat(withoutBuild.isCompatiblyGreaterThan(withBuild), is(true));
+    }
 }
